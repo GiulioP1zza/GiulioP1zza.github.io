@@ -1,0 +1,1098 @@
+/* =============================================================
+   GLOBAL VARIABLES
+   Define reusable colours and values here so you only need
+   to change them in one place to update the whole site
+   ============================================================= */
+:root {
+  --color-primary: #5153d7;       /* purple — used for text and accents */
+  --color-accent: #f7b32b;        /* yellow — used for headings and highlights */
+  --color-bg-widget: #000000;     /* black — background of all widgets */
+  --color-text-light: #ffffff;    /* white — used for values and labels */
+  --color-hover: rgba(255, 255, 255, 0.1);
+  --color-hover-strong: rgba(255, 255, 255, 0.2);
+  --color-subtle: rgba(255, 255, 255, 0.05);
+  --border-radius: 12px;          /* shared border radius for all widgets */
+  --widget-gap: 12px;             /* shared gap inside widgets */
+}
+
+
+/* =============================================================
+   RESET & BASE
+   ============================================================= */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: var(--color-primary);
+  font-family: "ZCOOL KuaiLe", sans-serif;
+  text-align: center;
+  position: relative;
+  z-index: 0;
+}
+
+
+/* =============================================================
+   ANIMATED BACKGROUND
+   ============================================================= */
+#animatedBackground {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: url("assets/background.jpg");
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-size: auto 100%;
+  animation: animatedBackground 500s linear infinite; /* adjust for speed */
+  z-index: -1;
+}
+
+@keyframes animatedBackground {
+  from { background-position: 0 0; }
+  to { background-position: -10000px 0; } /* negative = right to left */
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+
+/* =============================================================
+   LAYOUT
+   ============================================================= */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.intro {
+  margin-bottom: 20px;
+}
+
+.intro strong {
+  font-weight: 600;
+  font-size: 4rem;
+}
+
+/* Side by side widget rows */
+.widgets-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 20px;
+  flex-wrap: wrap; /* stacks vertically on small screens */
+}
+
+.widget-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-header {
+  text-align: center;
+  margin: 0;
+}
+
+
+/* =============================================================
+   TYPOGRAPHY
+   All headings and paragraphs share a yellow highlight style
+   ============================================================= */
+h1, p, h3, h4 {
+  background: var(--color-accent);
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+h1 {
+  font-size: 5rem;
+  font-weight: 500;
+  font-family: "Gochi Hand", cursive;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+h3 {
+  font-size: 2rem;
+  font-weight: 500;
+  font-family: "Gochi Hand", cursive;
+  margin: 40px auto 30px;
+  text-align: center;
+  padding: 6px 10px;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+p {
+  font-size: 1rem;
+  font-weight: 50;
+  line-height: 1.6;
+  text-align: center;
+}
+
+p strong {
+  font-weight: 600;
+}
+
+
+/* =============================================================
+   NAVBAR
+   ============================================================= */
+#navbar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: var(--color-bg-widget);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+}
+
+#nav-logo {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-light);
+  cursor: pointer;
+}
+
+#nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+#nav-links a {
+  color: var(--color-text-light);
+  text-decoration: none;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  font-family: inherit;
+}
+
+#nav-links a:hover {
+  opacity: 1;
+}
+
+/* Highlights the link for the current page */
+#nav-links a.active {
+  opacity: 1;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+
+/* =============================================================
+   WORLD MAP
+   ============================================================= */
+svg {
+  width: 90%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+  background: transparent;
+}
+
+/* Default country colour */
+svg path {
+  fill: var(--color-accent);
+  transition: fill 0.2s ease;
+  stroke: var(--color-bg-widget);
+  stroke-width: 0.5px;
+}
+
+/* Visited country colour */
+svg path.visited {
+  fill: var(--color-primary);
+}
+
+/* Country name tooltip on hover */
+#tooltip {
+  position: absolute;
+  background: #1a1a2e;
+  color: var(--color-text-light);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  display: none;
+  z-index: 1000;
+}
+
+
+/* =============================================================
+   SHARED WIDGET STYLES
+   These apply to the info icon tooltip used on multiple widgets
+   ============================================================= */
+.info-icon {
+  position: relative;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 1;
+  margin-left: 4px;
+}
+
+.info-icon:hover {
+  opacity: 1;
+}
+
+.info-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 130%;
+  right: 0;
+  background: #1a1a2e;
+  color: var(--color-text-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  width: 200px;
+  line-height: 1.5;
+  z-index: 1000;
+}
+
+/* Small downward arrow on the tooltip */
+.info-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  border: 6px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.info-icon:hover .info-tooltip {
+  display: block;
+}
+
+
+/* =============================================================
+   ASCII WIDGET
+   ============================================================= */
+#ascii-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 24px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto 30px;
+  text-align: left;
+}
+
+#ascii-art {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0;
+  white-space: pre; /* preserves all spaces and line breaks */
+}
+
+
+/* =============================================================
+   The Basics WIDGET
+   ============================================================= */
+#basics-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 16px 20px;
+  border-radius: var(--border-radius);
+  width: 500px;
+  margin: 0 auto 30px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--widget-gap);
+}
+
+#basics-title {
+    font-weight: 600;
+    font-size: 1.3rem;
+    text-align: center;
+    margin: 0;
+    display: block;
+    padding: 0;
+    border-radius: var(--border-radius);
+}
+
+#basics-list p {
+    color: #5153d7;
+    font-size: 0.85rem;
+    margin: 1px;
+    text-align: left;
+    background: none;
+    display: block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    line-height: 1.6;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.basics-label {
+    color: #fff;
+    font-weight: 700;
+}
+
+
+
+/* =============================================================
+   INFO WIDGET (name, hometown, languages)
+   ============================================================= */
+#info-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 16px 20px;
+  border-radius: var(--border-radius);
+  width: 300px;
+  margin: 0 auto 30px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--widget-gap);
+}
+
+#info-title {
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+#info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--color-subtle);
+  border-radius: 8px;
+}
+
+.info-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+  text-align: right;
+}
+
+
+/* =============================================================
+   AGE WIDGET
+   ============================================================= */
+#age-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 16px 24px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#age-title {
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+#age-display {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+#age-subtitle {
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+
+/* =============================================================
+   PHOTO CAROUSEL
+   ============================================================= */
+#photo-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-text-light);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#photo-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: opacity 0.3s ease;
+}
+
+#photo-controls {
+  display: flex;
+  gap: 10px;
+}
+
+#photo-prev,
+#photo-next,
+#photo-fullscreen {
+  background: var(--color-hover);
+  color: var(--color-text-light);
+  border: none;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s ease;
+}
+
+#photo-prev:hover,
+#photo-next:hover,
+#photo-fullscreen:hover {
+  background: var(--color-hover-strong);
+}
+
+/* Fullscreen mode styles */
+#photo-widget:fullscreen {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  padding: 20px;
+}
+
+#photo-widget:fullscreen #photo-image {
+  width: auto;
+  height: 85vh;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+#photo-widget:fullscreen #photo-controls {
+  margin-top: 20px;
+}
+
+#photo-widget:fullscreen #photo-prev,
+#photo-widget:fullscreen #photo-next,
+#photo-widget:fullscreen #photo-fullscreen {
+  padding: 10px 24px;
+  font-size: 1rem;
+}
+
+
+/* =============================================================
+   LAST.FM MUSIC WIDGET
+   ============================================================= */
+#lastfm-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto;
+  position: relative;
+}
+
+#album-art {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+}
+
+#track-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+#artist-name {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+
+/* =============================================================
+   WEATHER WIDGET
+   ============================================================= */
+#weather-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+#weather-icon {
+  font-size: 2rem;
+}
+
+#weather-city {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+#weather-temp {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+#weather-condition {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+
+/* =============================================================
+   WORLD PROGRESS BAR
+   ============================================================= */
+#progress-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 16px 20px;
+  border-radius: var(--border-radius);
+  width: 300px;
+  margin: 0 auto 30px;
+}
+
+#progress-title {
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+#progress-bar-container {
+  background: var(--color-hover);
+  border-radius: 999px;
+  height: 10px;
+  width: 100%;
+  overflow: hidden;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transition: width 1s ease;
+}
+
+#progress-text {
+  font-size: 0.85rem;
+  margin: 8px 0 0 0;
+  text-align: center;
+}
+
+
+/* =============================================================
+   FLIGHT WIDGET
+   ============================================================= */
+#flight-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto 30px;
+}
+
+#flight-icon {
+  font-size: 2rem;
+}
+
+#flight-title {
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0 0 4px 0;
+}
+
+#flight-route {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+#flight-departure,
+#flight-arrival {
+  color: var(--color-text-light);
+}
+
+#flight-arrow {
+  color: var(--color-primary);
+}
+
+#flight-status {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+
+/* =============================================================
+   FUN FACTS WIDGET
+   ============================================================= */
+#facts-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: 300px;
+  margin: 0 auto 30px;
+}
+
+#facts-icon {
+  font-size: 2rem;
+  align-self: flex-start;
+  padding-top: 4px;
+}
+
+#facts-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+#facts-title {
+  font-weight: 600;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+#facts-text {
+  font-size: 0.9rem;
+  margin: 0;
+  min-height: 40px;
+  line-height: 1.5;
+  transition: opacity 0.3s ease;
+}
+
+#facts-button {
+  background: var(--color-hover);
+  color: var(--color-text-light);
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s ease;
+  font-family: inherit;
+}
+
+#facts-button:hover {
+  background: var(--color-hover-strong);
+}
+
+
+/* =============================================================
+   LICHESS CHESS WIDGET
+   ============================================================= */
+#lichess-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto 30px;
+}
+
+#lichess-icon {
+  font-size: 2rem;
+}
+
+#lichess-username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+#lichess-rating {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+#lichess-games,
+#lichess-last-game {
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+
+/* =============================================================
+   BOOKS WIDGET
+   ============================================================= */
+#books-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 16px;
+  border-radius: var(--border-radius);
+  width: 700px;
+  margin: 30px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#books-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+#books-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 cards per row — change to repeat(2, 1fr) for 2 columns */
+  gap: 10px;
+}
+
+.book-card {
+  background: var(--color-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 0.2s ease;
+}
+
+.book-card:hover {
+  background: var(--color-hover);
+}
+
+.book-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--color-text-light);
+}
+
+.book-author {
+  font-size: 0.78rem;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.book-description {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+
+/* =============================================================
+   FAVOURITE WEBSITES WIDGET
+   ============================================================= */
+#websites-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-text-light);
+  padding: 16px;
+  border-radius: var(--border-radius);
+  width: 300px;
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#websites-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--color-primary);
+}
+
+#websites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.website-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: var(--color-text-light);
+  transition: background 0.2s ease;
+}
+
+.website-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.website-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.website-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.website-description {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.website-arrow {
+  color: var(--color-primary);
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.website-item:hover .website-arrow {
+  transform: translateX(4px);
+}
+
+
+/* =============================================================
+   VISITOR COUNTER WIDGET
+   ============================================================= */
+#visitor-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+#visitor-icon {
+  font-size: 2rem;
+}
+
+#visitor-total {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+#visitor-total-label,
+#visitor-online-label {
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+#visitor-online {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: #4caf50;
+}
+
+/* Pulsing green dot before the online count */
+#visitor-online::before {
+  content: '● ';
+  color: #4caf50;
+  animation: pulse 1.5s infinite;
+}
+
+
+/* =============================================================
+   CURRENTLY WIDGET (reading, learning, playing, watching)
+   ============================================================= */
+#currently-widget {
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 16px 20px;
+  border-radius: var(--border-radius);
+  width: 300px;
+  margin: 30px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--widget-gap);
+}
+
+#currently-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+#currently-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.currently-row {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  padding: 8px 12px;
+  background: var(--color-subtle);
+  border-radius: 8px;
+}
+
+.currently-emoji {
+  font-size: 1.2rem;
+}
+
+.currently-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+  flex: 1; /* fills remaining space so text centers within it */
+}
+
+.currently-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.currently-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+
+/* =============================================================
+   MOBILE RESPONSIVE — applies to screens smaller than 768px
+   ============================================================= */
+@media (max-width: 768px) {
+
+  /* Make the main container full width with smaller padding */
+  .container {
+    padding: 20px 12px;
+  }
+
+  /* Stack widgets vertically instead of side by side */
+  .widgets-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Make all widgets fill the screen width */
+  #lastfm-widget,
+  #weather-widget,
+  #facts-widget,
+  #flight-widget,
+  #lichess-widget,
+  #visitor-widget,
+  #progress-widget,
+  #info-widget,
+  #age-widget,
+  #currently-widget,
+  #websites-widget,
+  #books-widget,
+  #photo-widget,
+  #ascii-widget,
+  #basics-widget {
+    width: 90%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Shrink the photo carousel height */
+  #photo-image {
+    height: 220px;
+  }
+
+  /* Shrink the main heading */
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  h3 {
+    font-size: 1.4rem;
+  }
+
+  /* Make the navbar stack vertically */
+  #navbar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  /* Make nav links wrap and center */
+  #nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  /* Make the SVG map full width */
+  svg {
+    width: 100%;
+  }
+
+  /* Make the books grid 1 column instead of 3 */
+  #books-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Shrink the ASCII art font so it doesn't overflow */
+  #ascii-art {
+    font-size: 0.6rem;
+    overflow-x: auto;
+  }
+
+}

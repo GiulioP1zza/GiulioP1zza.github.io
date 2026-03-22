@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giulio's Cyber-Space</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Animated scrolling background -->
+    <div id="animatedBackground"></div>
+
+    <div class="container">
+
+        <!-- Page header -->
+        <h1>Giulio's Cyber-Space</h1>
+
+        <!-- Intro and navbar -->
+        <div class="intro">
+            <h2>Make the Internet great again!</h2>
+            <nav id="navbar">
+                <div id="nav-logo">Navigation</div>
+                <ul id="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="travel.html">Travel</a></li>
+                    <li><a href="recommendations.html">Recommendations</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Books widget -->
+        <div id="books-widget">
+            <p id="books-title">Books</p>
+            <div id="books-grid"></div>
+        </div>
+
+        <!-- Websites and Currently widgets side by side -->
+        <div class="widgets-row">
+
+            <!-- Favourite websites -->
+            <div class="widget-column">
+                <div id="websites-widget">
+                    <p id="websites-title">Websites</p>
+                    <div id="websites-list"></div>
+                </div>
+            </div>
+
+            <!-- Currently reading, learning, playing, watching -->
+            <div class="widget-column">
+                <div id="currently-widget">
+                    <p id="currently-title">Currently</p>
+                    <div id="currently-list">
+
+                        <div class="currently-row">
+                            <span class="currently-emoji">📖</span>
+                            <div class="currently-info">
+                                <span class="currently-label">Reading</span>
+                                <span class="currently-value">So good they can't ignore you - Cal Newport</span>
+                            </div>
+                        </div>
+
+                        <div class="currently-row">
+                            <span class="currently-emoji">🎓</span>
+                            <div class="currently-info">
+                                <span class="currently-label">Learning</span>
+                                <span class="currently-value">Electric Bass</span>
+                            </div>
+                        </div>
+
+                        <div class="currently-row">
+                            <span class="currently-emoji">🎮</span>
+                            <div class="currently-info">
+                                <span class="currently-label">Playing</span>
+                                <span class="currently-value">Cyberpunk 2077</span>
+                            </div>
+                        </div>
+
+                        <div class="currently-row">
+                            <span class="currently-emoji">📺</span>
+                            <div class="currently-info">
+                                <span class="currently-label">Watching</span>
+                                <span class="currently-value">Kenny vs. Spenny</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

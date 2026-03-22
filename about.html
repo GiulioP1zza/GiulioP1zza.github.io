@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giulio's Cyber-Space</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Animated scrolling background -->
+    <div id="animatedBackground"></div>
+
+    <div class="container">
+
+        <!-- Page header -->
+        <h1>Giulio's Cyber-Space</h1>
+
+        <!-- Intro and navbar -->
+        <div class="intro">
+            <h2>Make the Internet great again!</h2>
+            <nav id="navbar">
+                <div id="nav-logo">Navigation</div>
+                <ul id="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="travel.html">Travel</a></li>
+                    <li><a href="recommendations.html">Recommendations</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- ASCII art -->
+        <h3>Hello World!</h3>
+        <div id="ascii-widget">
+            <pre id="ascii-art">
+|     .-.
+|    /   \         .-.
+|   /     \       /   \       .-.     .-.     _   _
++--/-------\-----/-----\-----/---\---/---\---/-\-/-\/\/---
+| /         \   /       \   /     '-'     '-'
+|/           '-'         '-'
+            </pre>
+        </div>
+
+        <!--The basics widget-->
+        <div id="basics-widget">
+            <p id="basics-title">The Basics</p>
+            <div id="basics-list">
+                <p><span class="basics-label">♡ likes:</span> sports, travelling, music, pizza, books</p>
+                <p><span class="basics-label">♡ dislikes:</span> consumerism, lack of sleep, slow websites, people who don't try</p>
+                <p><span class="basics-label">⊞ hobbies:</span> basketball, reading, playing bass, chess, watching youtube</p>
+            </div>
+        </div>
+
+        <!-- Info and age widgets side by side -->
+        <div class="widgets-row">
+
+            <div class="widget-column">
+                <div id="info-widget">
+                    <p id="info-title">About Me</p>
+                    <div id="info-list">
+                        <div class="info-row">
+                            <span class="info-label">Name</span>
+                            <span class="info-value">Giulio</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Hometown</span>
+                            <span class="info-value">Serramazzoni, Italy</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Languages</span>
+                            <span class="info-value">Italian, English, German</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget-column">
+                <div id="age-widget">
+                    <p id="age-title">Age</p>
+                    <p id="age-display">Loading...</p>
+                    <p id="age-subtitle">and counting...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Last.fm and weather widgets side by side -->
+        <div class="widgets-row">
+
+            <div class="widget-column">
+                <h3 class="widget-header">What I'm listening to</h3>
+                <div id="lastfm-widget">
+                    <img id="album-art" src="" alt="Album Art"/>
+                    <div id="track-info">
+                        <p id="track-name">Loading...</p>
+                        <p id="artist-name"></p>
+                    </div>
+                    <div class="info-icon">
+                        ℹ️
+                        <div class="info-tooltip">
+                            Currently listening (▶) or Last played (⏮) on Spotify.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget-column">
+                <h3 class="widget-header">The weather where I live</h3>
+                <div id="weather-widget">
+                    <div id="weather-icon">⛅</div>
+                    <div id="weather-info">
+                        <p id="weather-temp">--°C</p>
+                        <p id="weather-condition">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Lichess chess widget -->
+        <h3>LiChess profile</h3>
+        <div id="lichess-widget">
+            <div id="lichess-icon">♟️</div>
+            <div id="lichess-info">
+                <p id="lichess-username">Loading...</p>
+                <p id="lichess-rating"></p>
+                <p id="lichess-games"></p>
+                <p id="lichess-last-game"></p>
+            </div>
+        </div>
+
+    </div><!-- end .container -->
+
+    <script src="script.js"></script>
+</body>
+
+</html>
