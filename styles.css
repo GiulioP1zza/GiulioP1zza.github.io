@@ -415,6 +415,7 @@ svg path.visited {
   border-radius: var(--border-radius);
   width: fit-content;
   margin: 0 auto;
+  margin-bottom: 30px;
   text-align: center;
   display: flex;
   flex-direction: column;
