@@ -17,9 +17,9 @@ const LICHESS_USERNAME = 'MiulioGuratori';
 // Flight — update new upcoming flight
 const FLIGHT = {
   departure: 'Hamburg',
-  arrival: 'Bologna',
-  date: '2026-03-27', // Format: YYYY-MM-DD
-  time: '16:10'       // Format: HH:MM (24 hour clock)
+  arrival: 'Tromso',
+  date: '2026-04-30', // Format: YYYY-MM-DD
+  time: '15:20'       // Format: HH:MM (24 hour clock)
 };
 
 // Birthday
