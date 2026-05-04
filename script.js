@@ -17,8 +17,8 @@ const LICHESS_USERNAME = 'MiulioGuratori';
 // Flight — update new upcoming flight
 const FLIGHT = {
   departure: 'Hamburg',
-  arrival: 'Tromso',
-  date: '2026-04-30', // Format: YYYY-MM-DD
+  arrival: 'Sevilla',
+  date: '2026-06-12', // Format: YYYY-MM-DD
   time: '15:20'       // Format: HH:MM (24 hour clock)
 };
 
