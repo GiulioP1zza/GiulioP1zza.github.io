@@ -149,9 +149,9 @@ const BOOKS = [
     description: 'The best Western novel of all time.'
   },
   {
-    title: 'The Alchemist',
-    author: 'Paulo Coelho',
-    description: 'A philosophical novel about following your dreams and listening to your heart.'
+    title: 'La vita agra',
+    author: 'Luciano Bianciardi',
+    description: 'Intellectual seeks revenge in Milan, but becomes absorbed by alienating capitalism.'
   },
   {
     title: 'Il deserto dei tartari',
@@ -159,14 +159,14 @@ const BOOKS = [
     description: 'A young soldier is assigned to a remote fortress where everybody is waiting for a misterious and terrible enemy.'
   },
   {
-    title: 'Wanting',
-    author: 'Luke Burgis',
-    description: "Every time you think you want something you are actually imitating someone else's desires."
+    title: 'The Left Hand of Darkness',
+    author: 'Ursula K. Le Guin',
+    description: "Envoy navigates gender-fluid society, politics, and isolation on icy planet."
   },
   {
-    title: 'The Poisonwood Bible',
-    author: 'Barbara Kingsolver',
-    description: "In 1959, a missionary family moves from the U.S. to the Belgian Congo. Quite the cultural shock!"
+    title: 'All the Light We Cannot See',
+    author: 'Anthony Doerr',
+    description: "An historical novel about a blind French girl and a German boy whose paths collide during World War II."
   },
   {
     title: "If on a Winter's Night a Traveller",
@@ -473,9 +473,7 @@ function calculateWorldProgress() {
 // Fetches your Lichess rapid rating, number of games and last game result
 // No API key needed — Lichess has a completely public API
 async function fetchLichess() {
-  // Safety check — only run if the widget exists on this page
-  if (!document.getElementById('lichess-username')) return;
-
+  
   // Fetch the user profile data
   const userResponse = await fetch(`https://lichess.org/api/user/${LICHESS_USERNAME}`);
   const userData = await userResponse.json();
@@ -511,7 +509,7 @@ async function fetchLichess() {
     }
   }
 
-  document.getElementById('lichess-username').textContent = `👤 ${userData.username}`;
+ 
   document.getElementById('lichess-rating').textContent = `Rating: ${rating}`;
   document.getElementById('lichess-games').textContent = `Games played: ${games}`;
   document.getElementById('lichess-last-game').textContent = `Last game: ${lastResult}`;
@@ -710,9 +708,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Lichess widget ---
-  if (document.getElementById('lichess-username')) {
-    fetchLichess();
-  }
+  if (document.getElementById('lichess-rating')) {
+  fetchLichess();
+}
 
   // --- Map tooltip ---
   initMapTooltip();

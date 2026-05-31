@@ -759,12 +759,6 @@ svg path.visited {
   font-size: 2rem;
 }
 
-#lichess-username {
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
 #lichess-rating {
   font-size: 1.1rem;
   font-weight: 700;
