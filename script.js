@@ -16,10 +16,10 @@ const LICHESS_USERNAME = 'MiulioGuratori';
 
 // Flight — update new upcoming flight
 const FLIGHT = {
-  departure: 'Hamburg',
-  arrival: 'Sevilla',
-  date: '2026-06-12', // Format: YYYY-MM-DD
-  time: '15:20'       // Format: HH:MM (24 hour clock)
+  departure: 'Munich',
+  arrival: 'Madrid',
+  date: '2026-08-03', // Format: YYYY-MM-DD
+  time: '09:00'       // Format: HH:MM (24 hour clock)
 };
 
 // Birthday
