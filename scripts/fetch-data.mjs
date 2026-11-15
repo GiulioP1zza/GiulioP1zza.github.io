@@ -1,119 +1,177 @@
+// Runs inside the GitHub Action (Node 20+).
+// Calls Last.fm, OpenWeatherMap and Lichess with credentials from GitHub Secrets
+// and writes the results to data/widgets.json (plus the album cover as an image),
+// so visitors' browsers only ever talk to giulio.world.
+//
+// NOTE: workflow logs of a public repo are public. Never print URLs,
+// environment variables or full API responses in this file.
 
-const DATA_URL = 'data/widgets.json';
-const MAX_DATA_AGE_MS = 10 * 60 * 1000; // older than this: don't claim "now playing"
-const ALBUM_ART_PATH = /^data\/album-art\.(jpg|png|webp|gif)$/;
+import { mkdir, writeFile } from 'node:fs/promises';
 
-function setText(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text;
+const {
+  LASTFM_API_KEY,
+  LASTFM_USERNAME,
+  WEATHER_API_KEY,
+  WEATHER_CITY,
+  LICHESS_USERNAME,
+} = process.env;
+
+const missing = Object.entries({
+  LASTFM_API_KEY,
+  LASTFM_USERNAME,
+  WEATHER_API_KEY,
+  WEATHER_CITY,
+  LICHESS_USERNAME,
+})
+  .filter(([, value]) => !value)
+  .map(([name]) => name);
+
+if (missing.length > 0) {
+  console.error(`Missing secrets: ${missing.join(', ')}`);
+  process.exit(1);
 }
 
-async function loadWidgetData() {
-  // Only run on pages that contain at least one of these widgets
-  const needsData = ['track-name', 'weather-condition', 'lichess-rating']
-    .some(id => document.getElementById(id));
-  if (!needsData) return;
+const OUT_DIR = 'data';
+const TIMEOUT_MS = 15_000;
+const HEADERS = { 'User-Agent': 'giulio.world-widget-updater' };
 
-  let data;
+// Album covers: only download from these hosts, only real raster images, max 1 MB
+const ART_HOSTS = ['lastfm.freetls.fastly.net'];
+const ART_TYPES = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+const MAX_ART_BYTES = 1_000_000;
+
+// Error messages only contain a label and a status code, never the URL
+// (the URL contains the API key).
+async function request(url, label, extraHeaders = {}) {
+  const res = await fetch(url, {
+    headers: { ...HEADERS, ...extraHeaders },
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  if (!res.ok) throw new Error(`${label}: HTTP ${res.status}`);
+  return res;
+}
+
+// --- Last.fm ---------------------------------------------------------------
+async function saveAlbumArt(imageUrl) {
   try {
-    const response = await fetch(DATA_URL, { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    data = await response.json();
-  } catch {
-    data = { updated: null, lastfm: null, weather: null, lichess: null };
-  }
+    if (!imageUrl) return null;
+    const url = new URL(imageUrl);
+    if (url.protocol !== 'https:' || !ART_HOSTS.includes(url.hostname)) return null;
 
-  renderLastFm(data);
-  renderWeather(data.weather);
-  renderLichess(data.lichess);
-}
+    const res = await request(url, 'Album art');
+    const type = (res.headers.get('content-type') || '').split(';')[0].trim();
+    const ext = ART_TYPES[type];
+    if (!ext) return null;
 
+    const bytes = Buffer.from(await res.arrayBuffer());
+    if (bytes.length === 0 || bytes.length > MAX_ART_BYTES) return null;
 
-function renderLastFm(data) {
-  if (!document.getElementById('track-name')) return;
-
-  const track = data.lastfm;
-  if (!track) {
-    setText('track-name', 'Currently unavailable');
-    setText('artist-name', '');
-    return;
-  }
-
-  // The data is up to ~10 minutes old, so only show "playing" if it is fresh
-  const age = Date.now() - Date.parse(data.updated);
-  const isPlaying = track.nowPlaying && age < MAX_DATA_AGE_MS;
-
-  setText('track-name', (isPlaying ? '▶ ' : '⏮ ') + track.track);
-  setText('artist-name', track.artist);
-
-  const art = document.getElementById('album-art');
-  if (art) {
-    if (track.albumArt && ALBUM_ART_PATH.test(track.albumArt)) {
-      // ?v= makes the browser reload the cover when the data changes
-      art.src = `${track.albumArt}?v=${encodeURIComponent(data.updated)}`;
-      art.hidden = false;
-    } else {
-      art.hidden = true;
-    }
+    await writeFile(`${OUT_DIR}/album-art.${ext}`, bytes);
+    return `data/album-art.${ext}`;
+  } catch (err) {
+    console.error(`Album art skipped: ${err.message}`);
+    return null;
   }
 }
 
+async function getLastFm() {
+  const url = new URL('https://ws.audioscrobbler.com/2.0/');
+  url.search = new URLSearchParams({
+    method: 'user.getrecenttracks',
+    user: LASTFM_USERNAME,
+    api_key: LASTFM_API_KEY,
+    format: 'json',
+    limit: '1',
+  });
 
-function weatherEmoji(id) {
-  // OpenWeatherMap uses numeric IDs to categorize weather conditions
-  if (id >= 200 && id < 300) return '⛈️';  // Thunderstorm
-  if (id >= 300 && id < 400) return '🌦️'; // Drizzle
-  if (id >= 500 && id < 600) return '🌧️'; // Rain
-  if (id >= 600 && id < 700) return '❄️';  // Snow
-  if (id >= 700 && id < 800) return '🌫️'; // Fog/Mist
-  if (id === 800) return '☀️';             // Clear sky
-  if (id > 800) return '⛅';               // Cloudy
-  return '🌡️';
+  const data = await (await request(url, 'Last.fm')).json();
+  const track = data.recenttracks.track[0];
+  if (!track) return null;
+
+  return {
+    track: String(track.name),
+    artist: String(track.artist['#text']),
+    nowPlaying: track['@attr']?.nowplaying === 'true',
+    albumArt: await saveAlbumArt(track.image?.[2]?.['#text']),
+  };
 }
 
-function renderWeather(weather) {
-  if (!document.getElementById('weather-condition')) return;
+// --- Weather ---------------------------------------------------------------
+async function getWeather() {
+  const url = new URL('https://api.openweathermap.org/data/2.5/weather');
+  url.search = new URLSearchParams({
+    q: WEATHER_CITY,
+    appid: WEATHER_API_KEY,
+    units: 'metric',
+  });
 
-  if (!weather) {
-    setText('weather-temp', '--°C');
-    setText('weather-condition', 'Currently unavailable');
-    return;
+  const data = await (await request(url, 'OpenWeatherMap')).json();
+  return {
+    temp: Math.round(data.main.temp),
+    condition: String(data.weather[0].description),
+    id: Number(data.weather[0].id),
+  };
+}
+
+// --- Lichess ---------------------------------------------------------------
+async function getLichess() {
+  const name = encodeURIComponent(LICHESS_USERNAME);
+
+  const user = await (await request(`https://lichess.org/api/user/${name}`, 'Lichess user')).json();
+  const rapid = user.perfs?.rapid;
+  if (!rapid) throw new Error('Lichess: no rapid rating');
+
+  const gameRes = await request(
+    `https://lichess.org/api/games/user/${name}?max=1&perfType=rapid`,
+    'Lichess games',
+    { Accept: 'application/x-ndjson' }
+  );
+  const gameText = (await gameRes.text()).trim();
+
+  let lastGame = null;
+  if (gameText) {
+    const game = JSON.parse(gameText.split('\n')[0]);
+    const myId = LICHESS_USERNAME.toLowerCase();
+    const color = game.players?.white?.user?.id === myId ? 'white' : 'black';
+    let outcome = 'draw';
+    if (game.winner) outcome = game.winner === color ? 'won' : 'lost';
+    lastGame = { outcome, color };
   }
 
-  const condition = weather.condition;
-  setText('weather-icon', weatherEmoji(weather.id));
-  setText('weather-temp', `${weather.temp}°C`);
-  setText('weather-condition', condition.charAt(0).toUpperCase() + condition.slice(1));
+  return { rating: Number(rapid.rating), games: Number(rapid.games), lastGame };
 }
 
+// --- Main ------------------------------------------------------------------
+await mkdir(OUT_DIR, { recursive: true });
 
-const LICHESS_OUTCOMES = { won: '✅ Won', lost: '❌ Lost', draw: '🟡 Draw' };
+const data = {
+  updated: new Date().toISOString(),
+  lastfm: null,
+  weather: null,
+  lichess: null,
+};
 
-function renderLichess(lichess) {
-  if (!document.getElementById('lichess-rating')) return;
+const jobs = { lastfm: getLastFm, weather: getWeather, lichess: getLichess };
 
-  if (!lichess) {
-    setText('lichess-rating', 'Currently unavailable');
-    setText('lichess-games', '');
-    setText('lichess-last-game', '');
-    return;
+// One failing source must not break the others
+for (const [key, job] of Object.entries(jobs)) {
+  try {
+    data[key] = await job();
+  } catch (err) {
+    console.error(`${key} failed: ${err.message}`);
   }
-
-  setText('lichess-rating', `Rating: ${lichess.rating}`);
-  setText('lichess-games', `Games played: ${lichess.games}`);
-
-  const game = lichess.lastGame;
-  const outcome = game ? LICHESS_OUTCOMES[game.outcome] : null;
-  const color = game && (game.color === 'white' ? 'White' : 'Black');
-  setText('lichess-last-game', outcome ? `Last game: ${outcome} (${color})` : 'Last game: Unknown');
 }
 
+// If everything failed, stop here so the previous (working) deployment stays live
+if (!data.lastfm && !data.weather && !data.lichess) {
+  console.error('All sources failed; keeping the previous deployment.');
+  process.exit(1);
+}
 
-// =============================================================
-// ADD THESE TWO LINES inside the DOMContentLoaded handler
-// (replacing the three old Last.fm / Weather / Lichess blocks):
-//
-//   loadWidgetData();
-//   setInterval(loadWidgetData, 5 * 60 * 1000);
-//
-// =============================================================
+await writeFile(`${OUT_DIR}/widgets.json`, JSON.stringify(data, null, 2));
+console.log('data/widgets.json written');
