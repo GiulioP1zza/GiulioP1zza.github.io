@@ -59,19 +59,34 @@ async function request(url, label, extraHeaders = {}) {
 // --- Last.fm ---------------------------------------------------------------
 async function saveAlbumArt(imageUrl) {
   try {
-    if (!imageUrl) return null;
+    if (!imageUrl) {
+      console.log('Album art: Last.fm returned no image for this track');
+      return null;
+    }
+
     const url = new URL(imageUrl);
-    if (url.protocol !== 'https:' || !ART_HOSTS.includes(url.hostname)) return null;
+    if (url.protocol !== 'https:' || !ART_HOSTS.includes(url.hostname)) {
+      // Only the hostname is logged (not the full URL)
+      console.log(`Album art: host not allowed (${url.hostname})`);
+      return null;
+    }
 
     const res = await request(url, 'Album art');
     const type = (res.headers.get('content-type') || '').split(';')[0].trim();
     const ext = ART_TYPES[type];
-    if (!ext) return null;
+    if (!ext) {
+      console.log(`Album art: unsupported content type (${type || 'none'})`);
+      return null;
+    }
 
     const bytes = Buffer.from(await res.arrayBuffer());
-    if (bytes.length === 0 || bytes.length > MAX_ART_BYTES) return null;
+    if (bytes.length === 0 || bytes.length > MAX_ART_BYTES) {
+      console.log(`Album art: unexpected size (${bytes.length} bytes)`);
+      return null;
+    }
 
     await writeFile(`${OUT_DIR}/album-art.${ext}`, bytes);
+    console.log(`Album art: saved (${ext}, ${bytes.length} bytes)`);
     return `data/album-art.${ext}`;
   } catch (err) {
     console.error(`Album art skipped: ${err.message}`);
