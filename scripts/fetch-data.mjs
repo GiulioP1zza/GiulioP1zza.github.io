@@ -33,7 +33,7 @@ if (missing.length > 0) {
 
 const OUT_DIR = 'data';
 const TIMEOUT_MS = 15_000;
-const HEADERS = { 'User-Agent': 'giulio.world-widget-updater' };
+const HEADERS = { 'User-Agent': 'giulio.world-widget-updater (https://giulio.world)' };
 
 // Album covers: only download from these hosts, only real raster images, max 1 MB
 const ART_HOSTS = ['lastfm-img.freetls.fastly.net', 'lastfm.freetls.fastly.net'];
@@ -161,6 +161,43 @@ async function getLichess() {
   return { rating: Number(rapid.rating), games: Number(rapid.games), lastGame };
 }
 
+// --- Wikipedia "On this day" -----------------------------------------------
+// Only links to en.wikipedia.org articles are kept
+const WIKI_URL = /^https:\/\/en\.wikipedia\.org\/wiki\/\S+$/;
+
+async function getOnThisDay() {
+  // Today's date in Berlin time, zero-padded (the API requires MM/DD)
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const month = parts.find(p => p.type === 'month').value;
+  const day = parts.find(p => p.type === 'day').value;
+
+  const res = await request(
+    `https://en.wikipedia.org/api/rest_v1/feed/onthisday/selected/${month}/${day}`,
+    'Wikipedia'
+  );
+  const body = await res.json();
+
+  const events = (body.selected || [])
+    .filter(e => typeof e.text === 'string' && Number.isFinite(Number(e.year)))
+    .slice(0, 12)
+    .map(e => {
+      const page = (e.pages || []).find(p => WIKI_URL.test(p?.content_urls?.desktop?.page || ''));
+      return {
+        year: Number(e.year),
+        text: e.text.slice(0, 400),
+        title: page?.titles?.normalized ? String(page.titles.normalized).slice(0, 100) : null,
+        url: page ? page.content_urls.desktop.page : null,
+      };
+    });
+
+  if (events.length === 0) throw new Error('Wikipedia: no events');
+  return { month: Number(month), day: Number(day), events };
+}
+
 // --- Main ------------------------------------------------------------------
 await mkdir(OUT_DIR, { recursive: true });
 
@@ -169,9 +206,15 @@ const data = {
   lastfm: null,
   weather: null,
   lichess: null,
+  onThisDay: null,
 };
 
-const jobs = { lastfm: getLastFm, weather: getWeather, lichess: getLichess };
+const jobs = {
+  lastfm: getLastFm,
+  weather: getWeather,
+  lichess: getLichess,
+  onThisDay: getOnThisDay,
+};
 
 // One failing source must not break the others
 for (const [key, job] of Object.entries(jobs)) {
@@ -183,7 +226,7 @@ for (const [key, job] of Object.entries(jobs)) {
 }
 
 // If everything failed, stop here so the previous (working) deployment stays live
-if (!data.lastfm && !data.weather && !data.lichess) {
+if (!data.lastfm && !data.weather && !data.lichess && !data.onThisDay) {
   console.error('All sources failed; keeping the previous deployment.');
   process.exit(1);
 }

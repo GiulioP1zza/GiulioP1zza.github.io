@@ -216,6 +216,81 @@ const WEBSITES = [
   }
 ];
 
+// --- ON THIS DAY WIDGET ---
+
+const WIKI_URL = /^https:\/\/en\.wikipedia\.org\/wiki\/\S+$/;
+
+let otdEvents = [];
+let otdIndex = 0;
+let otdDateKey = null;
+
+function showOnThisDay(index) {
+  const event = otdEvents[index];
+  if (!event) return;
+
+  setText('otd-text', `${event.year}: ${event.text}`);
+
+  const link = document.getElementById('otd-link');
+  if (!link) return;
+
+  if (event.url && WIKI_URL.test(event.url)) {
+    link.href = event.url;
+    link.textContent = event.title
+      ? `Read about ${event.title} on Wikipedia →`
+      : 'Read on Wikipedia →';
+    link.hidden = false;
+  } else {
+    link.hidden = true;
+  }
+}
+
+function renderOnThisDay(otd) {
+  if (!document.getElementById('otd-text')) return;
+
+  if (!otd || !Array.isArray(otd.events) || otd.events.length === 0) {
+    setText('otd-date', '');
+    setText('otd-text', 'Currently unavailable');
+    const link = document.getElementById('otd-link');
+    if (link) link.hidden = true;
+    return;
+  }
+
+  otdEvents = otd.events;
+
+  // Pick a new random event only when the day changes (or on the first load),
+  // so the page refresh every 5 minutes doesn't replace what the visitor is reading
+  const key = `${otd.month}-${otd.day}`;
+  if (key !== otdDateKey) {
+    otdDateKey = key;
+    otdIndex = Math.floor(Math.random() * otdEvents.length);
+    // The year 2000 is a leap year, so 29 February is handled correctly
+    const label = new Date(2000, otd.month - 1, otd.day)
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+    setText('otd-date', `${label} in history`);
+  }
+  if (otdIndex >= otdEvents.length) otdIndex = 0;
+
+  showOnThisDay(otdIndex);
+}
+
+function initOnThisDayButton() {
+  const button = document.getElementById('otd-button');
+  if (!button) return;
+
+  button.addEventListener('click', () => {
+    if (otdEvents.length < 2) return;
+
+    // Pick a random event that isn't the one currently shown
+    let next;
+    do {
+      next = Math.floor(Math.random() * otdEvents.length);
+    } while (next === otdIndex);
+
+    otdIndex = next;
+    showOnThisDay(otdIndex);
+  });
+}
+
 
 // WIDGET FUNCTIONS
 // Defined here and then called inside DOMContentLoaded
@@ -231,7 +306,7 @@ function setText(id, text) {
 
 async function loadWidgetData() {
   // Only run on pages that contain at least one of these widgets
-  const needsData = ['track-name', 'weather-condition', 'lichess-rating']
+  const needsData = ['track-name', 'weather-condition', 'lichess-rating', 'otd-text']
     .some(id => document.getElementById(id));
   if (!needsData) return;
 

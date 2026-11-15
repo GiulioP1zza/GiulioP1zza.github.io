@@ -751,7 +751,7 @@ svg path.visited {
 }
 
 #visitor-load {
-    background: black;
+  background: black;
   color: var(--color-text-light);
   border: none;
   border-radius: 999px;
@@ -765,6 +765,64 @@ svg path.visited {
 
 #visitor-load:hover {
     opacity: 0.8;
+}
+
+
+
+/* =============================================================
+   ON THIS DAY WIKIPEDIA WIDGET
+   ============================================================= */
+#otd-widget {
+  display: flex;
+  align-items: center;
+  gap: var(--widget-gap);
+  background: var(--color-bg-widget);
+  color: var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  width: 300px;
+  margin: 0 auto 30px;
+}
+
+#otd-button {
+  background: black;
+  color: var(--color-text-light);
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s ease;
+  font-family: inherit;
+}
+
+#otd-icon {
+  font-size: 2rem;
+  align-self: flex-start;
+  padding-top: 4px;
+}
+
+
+#otd-button:hover {
+    opacity: 0.8;
+}
+
+#otd-date {
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+#otd-link {
+    display: block;
+    margin: 6px 0;
+    font-size: 0.9em;
+}
+
+#otd-source {
+    font-size: 0.7em;
+    line-height: 1.4;
 }
 
 
@@ -944,6 +1002,11 @@ svg path.visited {
   border-radius: var(--border-radius);
   width: fit-content;
   margin: 0 auto;
+}
+
+#visitor-info #visitor-consent {
+    font-size: 0.7em;
+    line-height: 1.4;
 }
 
 #visitor-icon {
