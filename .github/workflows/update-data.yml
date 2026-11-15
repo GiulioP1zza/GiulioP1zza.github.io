@@ -1,0 +1,60 @@
+name: Update widgets and deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every 10 minutes, offset by 3 so it avoids the busy :00 mark
+    - cron: '3-59/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deployments at the same time; let a running one finish
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch widget data
+        env:
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          LASTFM_USERNAME: ${{ secrets.LASTFM_USERNAME }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+          WEATHER_CITY: ${{ secrets.WEATHER_CITY }}
+          LICHESS_USERNAME: ${{ secrets.LICHESS_USERNAME }}
+        run: node scripts/fetch-data.mjs
+
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -r *.html styles.css script.js CNAME assets data _site/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

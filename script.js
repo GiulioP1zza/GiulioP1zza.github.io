@@ -3,17 +3,6 @@
 // settings to update regularly
 // =============================================================
 
-// Last.fm — API key and username for the music widget
-const LASTFM_API_KEY = '300f795e2e59a8a0fbdf122017101bf0';
-const LASTFM_USERNAME = 'Recede1878';
-
-// Weather — OpenWeatherMap API key and city
-const WEATHER_API_KEY = '2a3f1ed46715838bdbc865c7cefa5b80';
-const CITY = 'Hamburg';
-
-// Lichess
-const LICHESS_USERNAME = 'MiulioGuratori';
-
 // Flight — update new upcoming flight
 const FLIGHT = {
   departure: 'Munich',
@@ -229,82 +218,118 @@ const WEBSITES = [
 
 
 // WIDGET FUNCTIONS
-// These functions contain the logic for each widget
-// They are defined here and then called inside DOMContentLoaded
+// Defined here and then called inside DOMContentLoaded
+
+const DATA_URL = 'data/widgets.json';
+const MAX_DATA_AGE_MS = 10 * 60 * 1000; // older than this: don't claim "now playing"
+const ALBUM_ART_PATH = /^data\/album-art\.(jpg|png|webp|gif)$/;
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+async function loadWidgetData() {
+  // Only run on pages that contain at least one of these widgets
+  const needsData = ['track-name', 'weather-condition', 'lichess-rating']
+    .some(id => document.getElementById(id));
+  if (!needsData) return;
+
+  let data;
+  try {
+    const response = await fetch(DATA_URL, { cache: 'no-cache' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    data = await response.json();
+  } catch {
+    data = { updated: null, lastfm: null, weather: null, lichess: null };
+  }
+
+  renderLastFm(data);
+  renderWeather(data.weather);
+  renderLichess(data.lichess);
+}
 
 
-
-// --- LAST.FM WIDGET ---
-// Fetches the most recently played or currently playing track from Last.fm
-// Last.fm scrobbles (records) Spotify listening history automatically
-function fetchLastFm() {
-  // Safety check — only run if the widget exists on this page
+function renderLastFm(data) {
   if (!document.getElementById('track-name')) return;
 
-  const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_USERNAME}&api_key=${LASTFM_API_KEY}&format=json&limit=1`;
+  const track = data.lastfm;
+  if (!track) {
+    setText('track-name', 'Currently unavailable');
+    setText('artist-name', '');
+    return;
+  }
 
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      const track = data.recenttracks.track[0];
+  // The data is up to ~10 minutes old, so only show "playing" if it is fresh
+  const age = Date.now() - Date.parse(data.updated);
+  const isPlaying = track.nowPlaying && age < MAX_DATA_AGE_MS;
 
-      // Last.fm sets nowplaying to true if a track is currently playing
-      const isNowPlaying = track['@attr'] && track['@attr'].nowplaying === 'true';
+  setText('track-name', (isPlaying ? '▶ ' : '⏮ ') + track.track);
+  setText('artist-name', track.artist);
 
-      // As a backup, also check if the track was scrobbled within the last 3 minutes
-      // This helps because Last.fm can be slow to update the nowplaying status
-      const timestamp = track.date ? track.date.uts * 1000 : null;
-      const threeMinutesAgo = Date.now() - 3 * 60 * 1000;
-      const isRecent = timestamp && timestamp > threeMinutesAgo;
-
-      const isPlaying = isNowPlaying || isRecent;
-
-      const trackName = track.name;
-      const artistName = track.artist['#text'];
-      const albumArt = track.image[2]['#text'];
-
-      // Show a play symbol if currently playing, or a rewind symbol if last played
-      document.getElementById('track-name').textContent =
-        (isPlaying ? '▶ ' : '⏮ ') + trackName;
-      document.getElementById('artist-name').textContent = artistName;
-      document.getElementById('album-art').src = albumArt;
-    });
+  const art = document.getElementById('album-art');
+  if (art) {
+    if (track.albumArt && ALBUM_ART_PATH.test(track.albumArt)) {
+      // ?v= makes the browser reload the cover when the data changes
+      art.src = `${track.albumArt}?v=${encodeURIComponent(data.updated)}`;
+      art.hidden = false;
+    } else {
+      art.hidden = true;
+    }
+  }
 }
 
 
-// --- WEATHER WIDGET ---
-// Fetches current weather data from OpenWeatherMap for the configured city
-async function fetchWeather() {
-  // Safety check — only run if the widget exists on this page
+function weatherEmoji(id) {
+  // OpenWeatherMap uses numeric IDs to categorize weather conditions
+  if (id >= 200 && id < 300) return '⛈️';  // Thunderstorm
+  if (id >= 300 && id < 400) return '🌦️'; // Drizzle
+  if (id >= 500 && id < 600) return '🌧️'; // Rain
+  if (id >= 600 && id < 700) return '❄️';  // Snow
+  if (id >= 700 && id < 800) return '🌫️'; // Fog/Mist
+  if (id === 800) return '☀️';             // Clear sky
+  if (id > 800) return '⛅';               // Cloudy
+  return '🌡️';
+}
+
+function renderWeather(weather) {
   if (!document.getElementById('weather-condition')) return;
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric`;
+  if (!weather) {
+    setText('weather-temp', '--°C');
+    setText('weather-condition', 'Currently unavailable');
+    return;
+  }
 
-  const response = await fetch(url);
-  const data = await response.json();
-
-  const temp = Math.round(data.main.temp);
-  const condition = data.weather[0].description;
-
-  // OpenWeatherMap uses numeric IDs to categorize weather conditions
-  // We use these to pick an appropriate emoji
-  const weatherId = data.weather[0].id;
-  let emoji = '🌡️';
-  if (weatherId >= 200 && weatherId < 300) emoji = '⛈️';       // Thunderstorm
-  else if (weatherId >= 300 && weatherId < 400) emoji = '🌦️';  // Drizzle
-  else if (weatherId >= 500 && weatherId < 600) emoji = '🌧️';  // Rain
-  else if (weatherId >= 600 && weatherId < 700) emoji = '❄️';   // Snow
-  else if (weatherId >= 700 && weatherId < 800) emoji = '🌫️';  // Fog/Mist
-  else if (weatherId === 800) emoji = '☀️';                     // Clear sky
-  else if (weatherId > 800) emoji = '⛅';                       // Cloudy
-
-  document.getElementById('weather-icon').textContent = emoji;
-  document.getElementById('weather-temp').textContent = `${temp}°C`;
-
-  // Capitalize the first letter of the condition description
-  document.getElementById('weather-condition').textContent =
-    condition.charAt(0).toUpperCase() + condition.slice(1);
+  const condition = weather.condition;
+  setText('weather-icon', weatherEmoji(weather.id));
+  setText('weather-temp', `${weather.temp}°C`);
+  setText('weather-condition', condition.charAt(0).toUpperCase() + condition.slice(1));
 }
+
+
+const LICHESS_OUTCOMES = { won: '✅ Won', lost: '❌ Lost', draw: '🟡 Draw' };
+
+function renderLichess(lichess) {
+  if (!document.getElementById('lichess-rating')) return;
+
+  if (!lichess) {
+    setText('lichess-rating', 'Currently unavailable');
+    setText('lichess-games', '');
+    setText('lichess-last-game', '');
+    return;
+  }
+
+  setText('lichess-rating', `Rating: ${lichess.rating}`);
+  setText('lichess-games', `Games played: ${lichess.games}`);
+
+  const game = lichess.lastGame;
+  const outcome = game ? LICHESS_OUTCOMES[game.outcome] : null;
+  const color = game && (game.color === 'white' ? 'White' : 'Black');
+  setText('lichess-last-game', outcome ? `Last game: ${outcome} (${color})` : 'Last game: Unknown');
+}
+
+
 
 
 // --- AGE WIDGET ---
@@ -469,51 +494,6 @@ function calculateWorldProgress() {
 }
 
 
-// --- LICHESS WIDGET ---
-// Fetches your Lichess rapid rating, number of games and last game result
-// No API key needed — Lichess has a completely public API
-async function fetchLichess() {
-  
-  // Fetch the user profile data
-  const userResponse = await fetch(`https://lichess.org/api/user/${LICHESS_USERNAME}`);
-  const userData = await userResponse.json();
-
-  const rapid = userData.perfs.rapid;
-  const rating = rapid.rating;
-  const games = rapid.games;
-
-  // Fetch the last rapid game — the API returns games in PGN format (chess notation)
-  const gameResponse = await fetch(
-    `https://lichess.org/api/games/user/${LICHESS_USERNAME}?max=1&perfType=rapid&clocks=false&evals=false`
-  );
-  const gameText = await gameResponse.text();
-
-  // Parse the result from the PGN text
-  // In chess PGN format, "1-0" means White won, "0-1" means Black won, "1/2-1/2" means draw
-  let lastResult = 'Unknown';
-  if (gameText.includes(`[White "${LICHESS_USERNAME}"]`)) {
-    const resultMatch = gameText.match(/\[Result "(.+?)"\]/);
-    if (resultMatch) {
-      const result = resultMatch[1];
-      if (result === '1-0') lastResult = '✅ Won (White)';
-      else if (result === '0-1') lastResult = '❌ Lost (White)';
-      else lastResult = '🟡 Draw (White)';
-    }
-  } else {
-    const resultMatch = gameText.match(/\[Result "(.+?)"\]/);
-    if (resultMatch) {
-      const result = resultMatch[1];
-      if (result === '0-1') lastResult = '✅ Won (Black)';
-      else if (result === '1-0') lastResult = '❌ Lost (Black)';
-      else lastResult = '🟡 Draw (Black)';
-    }
-  }
-
- 
-  document.getElementById('lichess-rating').textContent = `Rating: ${rating}`;
-  document.getElementById('lichess-games').textContent = `Games played: ${games}`;
-  document.getElementById('lichess-last-game').textContent = `Last game: ${lastResult}`;
-}
 
 
 // --- BOOKS WIDGET ---
@@ -622,20 +602,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- Last.fm widget ---
-  // Fetch immediately and then refresh every 30 seconds
-  if (document.getElementById('track-name')) {
-    fetchLastFm();
-    setInterval(fetchLastFm, 30000);
-  }
-
-  // --- Weather widget ---
-  // Fetch immediately and then refresh every 10 minutes
-  // Weather doesn't change as fast as music so 10 minutes is enough
-  if (document.getElementById('weather-condition')) {
-    fetchWeather();
-    setInterval(fetchWeather, 10 * 60 * 1000);
-  }
+  //Various widgets
+  loadWidgetData();
+  setInterval(loadWidgetData, 5 * 60 * 1000);
 
   // --- Age widget ---
   // Update immediately and then refresh every hour
@@ -707,10 +676,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderWebsites();
   }
 
-  // --- Lichess widget ---
-  if (document.getElementById('lichess-rating')) {
-  fetchLichess();
-}
 
   // --- Map tooltip ---
   initMapTooltip();

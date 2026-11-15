@@ -750,6 +750,23 @@ svg path.visited {
   background: var(--color-hover-strong);
 }
 
+#visitor-load {
+    background: black;
+  color: var(--color-text-light);
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s ease;
+  font-family: inherit;
+}
+
+#visitor-load:hover {
+    opacity: 0.8;
+}
+
 
 /* =============================================================
    LICHESS CHESS WIDGET
