@@ -316,12 +316,13 @@ async function loadWidgetData() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     data = await response.json();
   } catch {
-    data = { updated: null, lastfm: null, weather: null, lichess: null };
+    data = { updated: null, lastfm: null, weather: null, lichess: null , OnThisDay: null };
   }
 
   renderLastFm(data);
   renderWeather(data.weather);
   renderLichess(data.lichess);
+  renderOnThisDay(data.OnThisDay)
 }
 
 
@@ -680,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
   //Various widgets
   loadWidgetData();
   setInterval(loadWidgetData, 5 * 60 * 1000);
+  initOnThisDayButton();
 
   // --- Age widget ---
   // Update immediately and then refresh every hour
