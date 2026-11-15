@@ -11,8 +11,6 @@ const FLIGHT = {
   time: '09:00'       // Format: HH:MM (24 hour clock)
 };
 
-// Birthday
-const BIRTHDATE = new Date('2004-01-01T16:00:00');
 
 // Total number of countries in the world — used for the progress bar
 const TOTAL_COUNTRIES = 195;
@@ -320,7 +318,7 @@ async function loadWidgetData() {
     data = { updated: null, lastfm: null, weather: null, lichess: null, onThisDay: null };
   }
 
-  console.log('widget data keys:', Object.keys(data));
+  
 
   renderLastFm(data);
   renderWeather(data.weather);

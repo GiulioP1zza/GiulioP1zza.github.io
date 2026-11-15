@@ -115,6 +115,7 @@ body {
   margin: 0;
 }
 
+#site-footer { margin-top: 24px; font-size: 0.8em; text-align: center; }
 
 /* =============================================================
    TYPOGRAPHY
