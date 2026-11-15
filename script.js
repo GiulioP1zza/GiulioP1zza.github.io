@@ -679,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   //Various widgets
-  loadWidgetData();
+  loadWidgetData(fetch('data/widgets.json', {cache: 'no-store'}).then(r => r.json()).then(d => renderOnThisDay(d.onThisDay)));
   setInterval(loadWidgetData, 5 * 60 * 1000);
   initOnThisDayButton();
 
