@@ -11,56 +11,79 @@
 
     <!-- Firebase visitor counter — must be type="module" for import statements to work -->
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        const consentBox = document.getElementById('visitor-consent');
+        const statsBox = document.getElementById('visitor-stats');
+        const loadBtn = document.getElementById('visitor-load');
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC6zwqEeCma2Epi8T3iVYtbzZym7MzFrWk",
-        authDomain: "personal-website-f54d6.firebaseapp.com",
-        databaseURL: "https://personal-website-f54d6-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "personal-website-f54d6",
-        storageBucket: "personal-website-f54d6.firebasestorage.app",
-        messagingSenderId: "245269069858",
-        appId: "1:245269069858:web:fb720f310f33a1d5b08a7b"
-    };
+        let started = false;
+        async function startCounter() {
+            if (started) return;
+            started = true;
+            consentBox.hidden = true;
+            statsBox.hidden = false;
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+            const { initializeApp } = await import(
+            "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+            const { getDatabase, ref, onValue, runTransaction, set, onDisconnect } =
+            await import(
+            "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
 
-    // Increment total visit count
-    const visitsRef = ref(db, 'visits/total');
-    runTransaction(visitsRef, (current) => (current || 0) + 1);
+            const app = initializeApp({
+                apiKey: "AIzaSyC6zwqEeCma2Epi8T3iVYtbzZym7MzFrWk",
+                authDomain: "personal-website-f54d6.firebaseapp.com",
+                databaseURL: "https://personal-website-f54d6-default-rtdb.europe-west1.firebasedatabase.app",
+                projectId: "personal-website-f54d6",
+                storageBucket: "personal-website-f54d6.firebasestorage.app",
+                messagingSenderId: "245269069858",
+                appId: "1:245269069858:web:fb720f310f33a1d5b08a7b"
+            });
+            const db = getDatabase(app);
 
-    // Listen for real time total updates
-    const totalRef = ref(db, 'visits/total');
-    onValue(totalRef, (snapshot) => {
-        document.getElementById('visitor-total').textContent = snapshot.val() || 0;
-    });
+            // Count a visit once per browser session, not on every reload
+            let alreadyCounted = false;
+            try { alreadyCounted = sessionStorage.getItem('counted') === '1'; } catch {}
+            const totalRef = ref(db, 'visits/total');
+            if (!alreadyCounted) {
+            runTransaction(totalRef, (c) => (c || 0) + 1);
+            try { sessionStorage.setItem('counted', '1'); } catch {}
+            }
+            onValue(totalRef, (s) => {
+            document.getElementById('visitor-total').textContent = s.val() || 0;
+            });
 
-   
-    // Set a timestamp when user arrives
-const sessionId = Date.now().toString();
-const timestampRef = ref(db, `visits/sessions/${sessionId}`);
-runTransaction(timestampRef, () => Date.now());
+            // Online presence: removed automatically when the connection drops
+            const sessionId = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+            const sessionRef = ref(db, `visits/sessions/${sessionId}`);
+            onDisconnect(sessionRef).remove();
+            set(sessionRef, Date.now());
 
-// Remove this session when user leaves
-window.addEventListener('beforeunload', () => {
-    runTransaction(timestampRef, () => null); // setting to null deletes it in Firebase
-});
+            onValue(ref(db, 'visits/sessions'), (s) => {
+            document.getElementById('visitor-online').textContent =
+                s.val() ? Object.keys(s.val()).length : 0;
+            });
+        }
 
-// Count only sessions active in the last 5 minutes
-onValue(ref(db, 'visits/sessions'), (snapshot) => {
-    const sessions = snapshot.val();
-    if (!sessions) {
-        document.getElementById('visitor-online').textContent = 0;
-        return;
-    }
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    const activeSessions = Object.values(sessions)
-        .filter(timestamp => timestamp > fiveMinutesAgo).length;
-    document.getElementById('visitor-online').textContent = activeSessions;
-});
-</script>
+        
+        loadBtn.addEventListener('click', () => {
+            try { localStorage.setItem('stats-consent', String(Date.now())); } catch {}
+            startCounter();
+        });
+
+        //Remembering choice for returning visitors
+        try {
+            const t = Number(localStorage.getItem('stats-consent'));
+            if (t && Date.now() - t < 180 * 24 * 60 * 60 * 1000) startCounter();
+        } catch {}
+
+        // Withdraw consent
+        document.getElementById('visitor-forget').addEventListener('click', (e) => {
+            e.preventDefault();
+            try { localStorage.removeItem('stats-consent'); } catch {}
+            location.reload();
+        });
+
+    
+    </script>
 
 </head>
 
@@ -112,10 +135,18 @@ onValue(ref(db, 'visits/sessions'), (snapshot) => {
         <div id="visitor-widget">
             <div id="visitor-icon">👁️</div>
             <div id="visitor-info">
+                <p id="visitor-consent">
+                Live stats are provided by Google Firebase. Loading them sends your
+                IP address to Google.
+                <button id="visitor-load">Load stats</button>
+                </p>
+                <div id="visitor-stats" hidden>
                 <p id="visitor-total-label">Total Visitors:</p>
                 <p id="visitor-total">Loading...</p>
                 <p id="visitor-online-label">Online Now:</p>
                 <p id="visitor-online">...</p>
+                <a href="#" id="visitor-forget">Forget my choice</a>
+                </div>
             </div>
         </div>
 
