@@ -36,7 +36,7 @@ const TIMEOUT_MS = 15_000;
 const HEADERS = { 'User-Agent': 'giulio.world-widget-updater' };
 
 // Album covers: only download from these hosts, only real raster images, max 1 MB
-const ART_HOSTS = ['lastfm.freetls.fastly.net'];
+const ART_HOSTS = ['lastfm-img.freetls.fastly.net', 'lastfm.freetls.fastly.net'];
 const ART_TYPES = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
