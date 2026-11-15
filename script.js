@@ -322,7 +322,7 @@ async function loadWidgetData() {
   renderLastFm(data);
   renderWeather(data.weather);
   renderLichess(data.lichess);
-  renderOnThisDay(data.OnThisDay)
+  renderOnThisDay(data.OnThisDay);
 }
 
 
