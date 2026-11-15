@@ -16,6 +16,17 @@
 }
 
 
+@font-face {
+  font-family: 'Gochi Hand';
+  src: url('assets/fonts/gochi-hand-v27-latin-regular.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ZCOOL KuaiLe';
+  src: url('assets/fonts/zcool-kuaile-v22-latin-regular.woff2') format('woff2');
+  font-display: swap;
+}
+
 /* =============================================================
    RESET & BASE
    ============================================================= */
