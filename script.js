@@ -315,14 +315,17 @@ async function loadWidgetData() {
     const response = await fetch(DATA_URL, { cache: 'no-cache' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     data = await response.json();
-  } catch {
-    data = { updated: null, lastfm: null, weather: null, lichess: null , OnThisDay: null };
+  } catch (err) {
+    console.error('widgets.json failed:', err);
+    data = { updated: null, lastfm: null, weather: null, lichess: null, onThisDay: null };
   }
+
+  console.log('widget data keys:', Object.keys(data));
 
   renderLastFm(data);
   renderWeather(data.weather);
   renderLichess(data.lichess);
-  renderOnThisDay(data.OnThisDay);
+  renderOnThisDay(data.onThisDay);
 }
 
 
