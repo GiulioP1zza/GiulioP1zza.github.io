@@ -5,10 +5,10 @@
 
 // Flight — update new upcoming flight
 const FLIGHT = {
-  departure: 'Munich',
-  arrival: 'Madrid',
-  date: '2026-08-03', // Format: YYYY-MM-DD
-  time: '09:00'       // Format: HH:MM (24 hour clock)
+  departure: 'Madrid',
+  arrival: 'Rio de Janeiro',
+  date: '2026-12-07', // Format: YYYY-MM-DD
+  time: '12:30'       // Format: HH:MM (24 hour clock)
 };
 
 
